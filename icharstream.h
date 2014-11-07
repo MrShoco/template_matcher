@@ -3,9 +3,9 @@
 
 class ICharStream {
 public:
-    virtual char GetChar();
-    virtual bool IsEmpty() const;
-    virtual ~ICharStream();
+    virtual char GetChar() = 0;
+    virtual bool IsEmpty() const = 0;
+    virtual ~ICharStream() = default;
 };
 
 #endif
