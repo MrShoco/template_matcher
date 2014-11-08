@@ -16,6 +16,10 @@ void StringStream::AddChar(char c) {
     stream_ += c;
 }
 
+void StringStream::Reset() {
+    ind = 0;
+}
+
 class StringStreamTest : public ::testing::Test {
 protected:
     virtual void SetUp() {

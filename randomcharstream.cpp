@@ -4,15 +4,20 @@
 #include <cstdlib>
 
 bool RandomCharStream::IsEmpty() const {
-    return sz_ <= 0;
+    return ind >= sz_;
 }
 
 char RandomCharStream::GetChar() {
     if(IsEmpty())
         throw std::out_of_range("Stream ends");
-    sz_--;
+    ind++;
 
     return rand() % (range_max - range_min + 1) + range_min;
+}
+
+void RandomCharStream::Reset() {
+    srand(rand_seed);
+    ind = 0;
 }
 
 class RandomCharStreamTest : public ::testing::Test {

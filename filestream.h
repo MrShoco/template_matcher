@@ -16,6 +16,8 @@ public:
 
     char GetChar();
 
+    void Reset();
+
 private:
     std::ifstream *fin;
 };

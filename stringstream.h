@@ -15,6 +15,8 @@ public:
 
     void AddChar(char c);
 
+    void Reset();
+
 private:
     size_t ind;
     std::string stream_;

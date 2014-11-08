@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdexcept>
 #include <iostream>
+#include <ios>
 
 bool FileStream::IsEmpty() const {
     if (!((*fin).is_open()))
@@ -11,10 +12,15 @@ bool FileStream::IsEmpty() const {
 }
 
 char FileStream::GetChar() {
-    if(IsEmpty())
+    if (IsEmpty())
         throw std::out_of_range("Stream ends");
 
     return (*fin).get();
+}
+
+void FileStream::Reset() {
+    (*fin).clear();
+    (*fin).seekg(0, std::ios::beg);
 }
 
 class FileStreamTest : public ::testing::Test {
