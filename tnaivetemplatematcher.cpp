@@ -1,3 +1,4 @@
+#include <queue>
 #include "tnaivetemplatematcher.h"
 #include "tbadstringexception.h"
 
@@ -11,16 +12,22 @@ TStringId TNaiveTemplateMatcher::AddTemplate(const std::string &templ) {
     }
 
     templs.push_back(templ);
+    max_size = std::max(max_size, templ.size());
     return (int)templs.size() - 1;
 }
 
 TMatchResults TNaiveTemplateMatcher::MatchStream(ICharStream &stream) {
     std::string current;
     TMatchResults result;
+    size_t n = 0;
 
     while (!stream.IsEmpty()) {
+        n++;
         char c = stream.GetChar();
         current += c;
+
+        if(current.size() > max_size)
+            current = current.substr(1, current.size() - 1);
 
         if ((unsigned char)c < 32)
         {
@@ -35,7 +42,7 @@ TMatchResults TNaiveTemplateMatcher::MatchStream(ICharStream &stream) {
                         eq = false;
                 }
                 if(eq == true) {
-                    result.push_back(std::make_pair(current.size(), i));
+                    result.push_back(std::make_pair(n, i));
                 }
             }
         }

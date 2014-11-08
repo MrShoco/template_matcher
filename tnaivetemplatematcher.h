@@ -11,6 +11,7 @@ public:
     TMatchResults MatchStream(ICharStream &stream);
 private:
     std::vector<std::string> templs;
+    size_t max_size;
 };
 
 #endif
