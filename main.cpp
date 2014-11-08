@@ -1,52 +1,67 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <exception>
 #include <stdexcept>
-#include "icharstream.h"
+#include <gtest/gtest.h>
 #include "tnaivetemplatematcher.h"
+#include "stringstream.h"
+#include "filestream.h"
+#include "randomcharstream.h"
 
-class StringStream : public ICharStream {
-public:
-    StringStream(std::string stream): stream_(stream), ind(0) {}
+class TNaiveTemplateMatcherTest : public ::testing::Test {
+protected:
+    virtual void SetUp() {
+        stm1 = StringStream("abacaba");
 
-    bool IsEmpty() const {
-        return ind >= stream_.size();
+        std::ofstream fout("input.txt");
+        for (size_t i = 0; i < 100; i++)
+            fout << "abacaba";
+        fout.close();
+
+        stm2 = FileStream("input.txt");
+
+        stm3 = RandomCharStream(100, 'a', 'c');
     }
 
-    char GetChar() {
-        if(IsEmpty())
-            throw std::out_of_range("Stream ends");
-        return stream_[ind++];
-    }
+    TNaiveTemplateMatcher matcher;
 
-    void AddChar(char c) {
-        stream_ += c;
-    }
+    StringStream stm1;
+    FileStream stm2;
+    RandomCharStream stm3;
 
-private:
-    size_t ind;
-    std::string stream_;
+    std::vector<std::pair<size_t, int> > matched;
 };
 
-int main()
-{
-    try {
-        StringStream str("abacaba");
-        
-        TNaiveTemplateMatcher matcher;
-        matcher.AddTemplate("aba");
-        matcher.AddTemplate("bacaba");
-        matcher.AddTemplate("abacaba");
-        matcher.AddTemplate("a");
-        
-        std::vector<std::pair<size_t, int> > matched = matcher.MatchStream(str);
+TEST_F(TNaiveTemplateMatcherTest, TestForCorrect) {
+    std::vector<std::string> strs;
+    strs.push_back("a");
+    strs.push_back("aba");
+    strs.push_back("aca");
+    strs.push_back("abacaba");
 
-        for (int i = 0; i < matched.size(); i++) {
-            std::cout << matched[i].first << " " << matched[i].second << std::endl;
-        }
-    } catch (std::exception &e) {
-        std::cout << e.what() << std::endl;
+    for(size_t i = 0; i < strs.size(); i++)
+        matcher.AddTemplate(strs[i]);
+
+    matched = matcher.MatchStream(stm3);
+    for (size_t i = 0; i < matched.size(); i++)
+    {
+        ASSERT_GE(matched[i].second, 0);
+        ASSERT_LT(matched[i].second, strs.size());
+        ASSERT_GE(matched[i].first, strs[matched[i].second].size());
+        ASSERT_LE(matched[i].first, 100);
     }
 
-    return 0;
+
+    matched = matcher.MatchStream(stm1);
+    ASSERT_EQ(matched.size(), 8);
+
+    matched = matcher.MatchStream(stm2);
+    ASSERT_EQ(matched.size(), 800);
+}
+
+int main(int argc, char ** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

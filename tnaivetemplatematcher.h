@@ -10,7 +10,7 @@ public:
     TStringId AddTemplate(const std::string &temp);
     TMatchResults MatchStream(ICharStream &stream);
 private:
-    std::vector<std::string> temps;
+    std::vector<std::string> templs;
 };
 
 #endif
