@@ -10,6 +10,23 @@
 #include "filestream.h"
 #include "randomcharstream.h"
 
+void TSingleTemplateMatcher::AppendCharToTemplate(char c) {
+    if (templ_.empty())
+        throw TNotSupportedException("Add a template first");
+
+    if((unsigned char)c < 32)
+        throw TBadStringException("Adding char is not in range 32-255");
+
+    templ_ += c;
+    size_t i = kmp.size();
+    size_t j = kmp[i];
+    while (j > 0 && templ_[i] != templ_[j])
+        j = kmp[j - 1];
+    if (templ_[i] == templ_[j])
+        j++;
+    kmp.push_back(j);
+}
+
 TStringId TSingleTemplateMatcher::AddTemplate(const std::string &templ) {
     if (!templ_.empty())
         throw TNotSupportedException("You can't add more than one template");

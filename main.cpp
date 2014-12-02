@@ -13,7 +13,7 @@
 #include "filestream.h"
 #include "randomcharstream.h"
 
-class TStaticTemplateMatcherTest : public ::testing::Test {
+class TSingleTemplateMatcherAppendTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         stm1 = StringStream("abacaba");
@@ -29,110 +29,51 @@ protected:
     }
 
     TSingleTemplateMatcher single_matcher;
-    TNaiveTemplateMatcher naive_matcher;
-    TStaticTemplateMatcher static_matcher;
+    TSingleTemplateMatcher asingle_matcher;
 
     StringStream stm1;
     FileStream stm2;
     RandomCharStream stm3;
 
     std::vector<std::pair<size_t, int> > single_matched;
-    std::vector<std::pair<size_t, int> > naive_matched;
-    std::vector<std::pair<size_t, int> > static_matched;
+    std::vector<std::pair<size_t, int> > asingle_matched;
 };
 
-TEST_F(TStaticTemplateMatcherTest, TestForCorrect) {
-    ASSERT_THROW(static_matcher.MatchStream(stm1), TNotSupportedException);
-    static_matcher.AddTemplate("aba");
-
-    static_matched = static_matcher.MatchStream(stm3);
-    for (size_t i = 0; i < static_matched.size(); i++)
-    {
-        ASSERT_GE(static_matched[i].second, 0);
-        ASSERT_LT(static_matched[i].second, 1);
-        ASSERT_GE(static_matched[i].first, 3);
-        ASSERT_LE(static_matched[i].first, 100);
-    }
-
-
-    static_matched = static_matcher.MatchStream(stm1);
-    ASSERT_EQ(static_matched.size(), 2);
-
-    static_matched = static_matcher.MatchStream(stm2);
-    ASSERT_EQ(static_matched.size(), 200);
-
-    ASSERT_THROW(static_matcher.AddTemplate("a"), TNotSupportedException);
-}
-
-TEST_F(TStaticTemplateMatcherTest, StressTesting) {
-    naive_matcher.AddTemplate("aba");
-    naive_matcher.AddTemplate("aca");
-    naive_matcher.AddTemplate("a");
-    static_matcher.AddTemplate("aba");
-    static_matcher.AddTemplate("aca");
-    static_matcher.AddTemplate("a");
-
-// String stream test
-    naive_matched = naive_matcher.MatchStream(stm1);
-    stm1.Reset();
-    static_matched = static_matcher.MatchStream(stm1);
-
-    
-    std::sort(naive_matched.begin(), naive_matched.end());
-    std::sort(static_matched.begin(), static_matched.end());
-
-    ASSERT_EQ(static_matched, naive_matched);
-
-// File stream test
-    static_matcher = TStaticTemplateMatcher();
+TEST_F(TSingleTemplateMatcherAppendTest, AppendCharToTemplateTest) {
 
     single_matcher.AddTemplate("aba");
-    static_matcher.AddTemplate("aba");
+    asingle_matcher.AddTemplate("a");
+    asingle_matcher.AppendCharToTemplate('b');
+    asingle_matcher.AppendCharToTemplate('a');
 
-    single_matched = single_matcher.MatchStream(stm2);
-    stm2.Reset();
-    static_matched = static_matcher.MatchStream(stm2);
-
+    single_matched = single_matcher.MatchStream(stm1);
+    stm1.Reset();
+    asingle_matched = asingle_matcher.MatchStream(stm1);
+    
     std::sort(single_matched.begin(), single_matched.end());
-    std::sort(static_matched.begin(), static_matched.end());
+    std::sort(asingle_matched.begin(), asingle_matched.end());
 
-    ASSERT_EQ(static_matched, single_matched);
+    ASSERT_EQ(asingle_matched, single_matched);
 
-// Random test
-    static_matcher = TStaticTemplateMatcher();
+// Random Test
 
-    static_matcher.AddTemplate("aba");
-    static_matcher.AddTemplate("aca");
-    static_matcher.AddTemplate("a");
+    asingle_matcher.AppendCharToTemplate('c');
+    single_matcher = TSingleTemplateMatcher();
+    single_matcher.AddTemplate("abac");
 
     for (size_t i = 1; i < 1000; i++) {
         stm3 = RandomCharStream(i, 'a', 'c');
-        naive_matched = naive_matcher.MatchStream(stm3);
+        single_matched = single_matcher.MatchStream(stm3);
         stm3.Reset();
-        static_matched = static_matcher.MatchStream(stm3);
+        asingle_matched = asingle_matcher.MatchStream(stm3);
         
-        std::sort(naive_matched.begin(), naive_matched.end());
-        std::sort(static_matched.begin(), static_matched.end());
+        std::sort(single_matched.begin(), single_matched.end());
+        std::sort(asingle_matched.begin(), asingle_matched.end());
 
-        ASSERT_EQ(static_matched, naive_matched);
+        ASSERT_EQ(asingle_matched, single_matched);
     }
 }
 
-
-TEST_F(TStaticTemplateMatcherTest, BigTest) {
-    for (size_t i = 1; i < 1000; i++) {
-        size_t len = rand() % i + 1;
-        std::string s;
-        for(size_t j = 0; j < len; j++)
-            s += rand()%('z' - 'a' + 1) + 'a';
-
-        static_matcher.AddTemplate(s);
-    }
-
-    stm3 = RandomCharStream(100000, 'a', 'z');
-
-    static_matched = static_matcher.MatchStream(stm3);
-}
 
 int main(int argc, char** argv)
 {
