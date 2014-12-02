@@ -5,6 +5,7 @@
 #include "stringstream.h"
 #include "filestream.h"
 #include "randomcharstream.h"
+#include "tnotsupportedexception.h"
 
 TStringId TNaiveTemplateMatcher::AddTemplate(const std::string &templ) {
     if (templ.size() == 0)
@@ -24,6 +25,9 @@ TMatchResults TNaiveTemplateMatcher::MatchStream(ICharStream &stream) {
     std::string current;
     TMatchResults result;
     size_t n = 0;
+
+    if (templs.size() == 0)
+        throw TNotSupportedException("You need to add at least one template");
 
     while (!stream.IsEmpty()) {
         n++;
