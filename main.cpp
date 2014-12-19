@@ -29,6 +29,7 @@ protected:
     }
 
     TSingleTemplateMatcher single_matcher;
+    TSingleTemplateMatcher single_append_matcher;
     TSingleTemplateMatcher asingle_matcher;
 
     StringStream stm1;
@@ -36,6 +37,7 @@ protected:
     RandomCharStream stm3;
 
     std::vector<std::pair<size_t, int> > single_matched;
+    std::vector<std::pair<size_t, int> > single_append_matched;
     std::vector<std::pair<size_t, int> > asingle_matched;
 };
 
@@ -73,6 +75,29 @@ TEST_F(TSingleTemplateMatcherAppendTest, AppendCharToTemplateTest) {
         ASSERT_EQ(asingle_matched, single_matched);
     }
 }
+
+TEST_F(TSingleTemplateMatcherAppendTest, BigAppendTest) {
+    std::string s;
+    for(size_t j = 0; j < 10000; j++)
+        s += rand()%('z' - 'a' + 1) + 'a';
+
+    single_append_matcher.AddTemplate(s);
+    single_matcher.AddTemplate(s);
+
+    for(size_t i = 0; i < 100; i++) {
+        char c = rand()%('z' - 'a' + 1) + 'a';
+        s += c;
+        single_append_matcher.AppendCharToTemplate(c);
+        single_matcher = TSingleTemplateMatcher();
+        single_matcher.AddTemplate(s);
+
+        stm3 = RandomCharStream(100000, 'a', 'z');
+
+        single_append_matched = single_append_matcher.MatchStream(stm3);
+        single_matched = single_matcher.MatchStream(stm3);
+    }
+}
+
 
 
 int main(int argc, char** argv)

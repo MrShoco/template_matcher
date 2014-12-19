@@ -19,7 +19,7 @@ void TSingleTemplateMatcher::AppendCharToTemplate(char c) {
 
     templ_ += c;
     size_t i = kmp.size();
-    size_t j = kmp[i];
+    size_t j = kmp[i - 1];
     while (j > 0 && templ_[i] != templ_[j])
         j = kmp[j - 1];
     if (templ_[i] == templ_[j])
@@ -45,7 +45,7 @@ TStringId TSingleTemplateMatcher::AddTemplate(const std::string &templ) {
     kmp[0] = 0;
 
     for (size_t i = 1; i < templ_.size(); i++) {
-        size_t j = kmp[i];
+        size_t j = kmp[i - 1];
         while (j > 0 && templ_[i] != templ_[j])
             j = kmp[j - 1];
         if (templ_[i] == templ_[j])
@@ -171,6 +171,25 @@ TEST_F(TSingleTemplateMatcherTest, StressTesting) {
         ASSERT_EQ(naive_matched, single_matched);
     }
 
+}
+
+TEST_F(TSingleTemplateMatcherTest, BigTest) {
+    std::string s;
+    for(size_t j = 0; j < 10000; j++)
+        s += rand()%('z' - 'a' + 1) + 'a';
+
+    single_matcher.AddTemplate(s);
+
+    for(size_t i = 0; i < 100; i++) {
+        char c = rand()%('z' - 'a' + 1) + 'a';
+        s += c;
+        single_matcher = TSingleTemplateMatcher();
+        single_matcher.AddTemplate(s);
+
+        stm3 = RandomCharStream(100000, 'a', 'z');
+
+        single_matched = single_matcher.MatchStream(stm3);
+    }
 }
 
 
