@@ -99,7 +99,24 @@ TEST_F(TSingleTemplateMatcherTest, StressTesting) {
 
 }
 
+TEST_F(TSingleTemplateMatcherTest, BigTest) {
+    std::string s;
+    for(size_t j = 0; j < 10000; j++)
+        s += rand()%('z' - 'a' + 1) + 'a';
 
+    single_matcher.AddTemplate(s);
+
+    for(size_t i = 0; i < 100; i++) {
+        char c = rand()%('z' - 'a' + 1) + 'a';
+        s += c;
+        single_matcher = TSingleTemplateMatcher();
+        single_matcher.AddTemplate(s);
+
+        stm3 = RandomCharStream(100000, 'a', 'z');
+
+        single_matched = single_matcher.MatchStream(stm3);
+    }
+}
 
 int main(int argc, char ** argv)
 {
