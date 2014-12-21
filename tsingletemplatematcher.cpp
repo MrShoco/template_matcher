@@ -18,14 +18,19 @@ void TSingleTemplateMatcher::AppendCharToTemplate(char c) {
         throw TBadStringException("Adding char is not in range 32-255");
 
     templ_ += c;
-    size_t i = kmp.size();
-    size_t j = kmp[i - 1];
-    while (j > 0 && templ_[i] != templ_[j])
-        j = kmp[j - 1];
-    if (templ_[i] == templ_[j])
-        j++;
-    kmp.push_back(j);
 }
+
+void TSingleTemplateMatcher::PrependCharToTemplate(char c) {
+    if (templ_.empty())
+        throw TNotSupportedException("Add a template first");
+
+    if((unsigned char)c < 32)
+        throw TBadStringException("Adding char is not in range 32-255");
+
+    prepended += c;
+}
+
+
 
 TStringId TSingleTemplateMatcher::AddTemplate(const std::string &templ) {
     if (!templ_.empty())
@@ -41,18 +46,6 @@ TStringId TSingleTemplateMatcher::AddTemplate(const std::string &templ) {
 
     templ_ = templ;
 
-    kmp.resize(templ_.size());
-    kmp[0] = 0;
-
-    for (size_t i = 1; i < templ_.size(); i++) {
-        size_t j = kmp[i - 1];
-        while (j > 0 && templ_[i] != templ_[j])
-            j = kmp[j - 1];
-        if (templ_[i] == templ_[j])
-            j++;
-        kmp[i] = j;
-    }
-
     return 0;
 }
 
@@ -67,20 +60,50 @@ TMatchResults TSingleTemplateMatcher::MatchStream(ICharStream &stream) {
     while (!stream.IsEmpty()) {
         n++;
         char c = stream.GetChar();
-        current += c;
 
         if ((unsigned char)c < 32)
         {
             throw TBadStringException("Some chars in stream are not in range 32-255");
         }
-        
-        while (pref > 0 && c != templ_[pref])
-            pref = kmp[pref - 1];
-        if (c == templ_[pref])
-            pref++;
 
-        if (pref == templ_.size())
-            result.push_back(std::make_pair(n, 0));
+        if(n < templ_.size() + prepended.size()) {
+            current += c;
+        }
+        
+        if (n == templ_.size() + prepended.size()) {
+            std::reverse(prepended.begin(), prepended.end());
+            templ_ = prepended + templ_;
+            prepended.clear();
+
+            kmp.resize(templ_.size());
+            kmp[0] = 0;
+
+            for (size_t i = 1; i < templ_.size(); i++) {
+                size_t j = kmp[i - 1];
+                while (j > 0 && templ_[i] != templ_[j])
+                    j = kmp[j - 1];
+                if (templ_[i] == templ_[j])
+                    j++;
+                kmp[i] = j;
+            }
+
+            for (size_t i = 0; i < current.size(); i++) {
+                while (pref > 0 && current[i] != templ_[pref])
+                    pref = kmp[pref - 1];
+                if (current[i] == templ_[pref])
+                    pref++;
+            }
+        }
+
+        if (n >= templ_.size() + prepended.size()) {
+            while (pref > 0 && c != templ_[pref])
+                pref = kmp[pref - 1];
+            if (c == templ_[pref])
+                pref++;
+
+            if (pref == templ_.size())
+                result.push_back(std::make_pair(n, 0));
+        }
     }
 
     return result;

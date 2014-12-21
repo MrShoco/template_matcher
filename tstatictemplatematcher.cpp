@@ -146,7 +146,6 @@ TEST_F(TStaticTemplateMatcherTest, StressTesting) {
 
     single_matcher.AddTemplate("aba");
     static_matcher.AddTemplate("aba");
-
     single_matched = single_matcher.MatchStream(stm2);
     stm2.Reset();
     static_matched = static_matcher.MatchStream(stm2);

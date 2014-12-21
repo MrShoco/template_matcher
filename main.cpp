@@ -13,7 +13,7 @@
 #include "filestream.h"
 #include "randomcharstream.h"
 
-class TSingleTemplateMatcherAppendTest : public ::testing::Test {
+class TSingleTemplateMatcherPrependTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         stm1 = StringStream("abacaba");
@@ -29,72 +29,76 @@ protected:
     }
 
     TSingleTemplateMatcher single_matcher;
-    TSingleTemplateMatcher single_append_matcher;
-    TSingleTemplateMatcher asingle_matcher;
+    TSingleTemplateMatcher single_prepend_matcher;
+    TSingleTemplateMatcher psingle_matcher;
 
     StringStream stm1;
     FileStream stm2;
     RandomCharStream stm3;
 
     std::vector<std::pair<size_t, int> > single_matched;
-    std::vector<std::pair<size_t, int> > single_append_matched;
-    std::vector<std::pair<size_t, int> > asingle_matched;
+    std::vector<std::pair<size_t, int> > single_prepend_matched;
+    std::vector<std::pair<size_t, int> > psingle_matched;
 };
 
-TEST_F(TSingleTemplateMatcherAppendTest, AppendCharToTemplateTest) {
+TEST_F(TSingleTemplateMatcherPrependTest, PrependCharToTemplateTest) {
 
     single_matcher.AddTemplate("aba");
-    asingle_matcher.AddTemplate("a");
-    asingle_matcher.AppendCharToTemplate('b');
-    asingle_matcher.AppendCharToTemplate('a');
+    psingle_matcher.AddTemplate("a");
+    psingle_matcher.PrependCharToTemplate('b');
+    psingle_matcher.PrependCharToTemplate('a');
 
     single_matched = single_matcher.MatchStream(stm1);
     stm1.Reset();
-    asingle_matched = asingle_matcher.MatchStream(stm1);
+    psingle_matched = psingle_matcher.MatchStream(stm1);
     
     std::sort(single_matched.begin(), single_matched.end());
-    std::sort(asingle_matched.begin(), asingle_matched.end());
+    std::sort(psingle_matched.begin(), psingle_matched.end());
 
-    ASSERT_EQ(asingle_matched, single_matched);
+    ASSERT_EQ(psingle_matched, single_matched);
 
 // Random Test
 
-    asingle_matcher.AppendCharToTemplate('c');
+    psingle_matcher.PrependCharToTemplate('c');
     single_matcher = TSingleTemplateMatcher();
-    single_matcher.AddTemplate("abac");
+    single_matcher.AddTemplate("caba");
 
     for (size_t i = 1; i < 1000; i++) {
         stm3 = RandomCharStream(i, 'a', 'c');
         single_matched = single_matcher.MatchStream(stm3);
         stm3.Reset();
-        asingle_matched = asingle_matcher.MatchStream(stm3);
+        psingle_matched = psingle_matcher.MatchStream(stm3);
         
         std::sort(single_matched.begin(), single_matched.end());
-        std::sort(asingle_matched.begin(), asingle_matched.end());
+        std::sort(psingle_matched.begin(), psingle_matched.end());
 
-        ASSERT_EQ(asingle_matched, single_matched);
+        ASSERT_EQ(psingle_matched, single_matched);
     }
 }
 
-TEST_F(TSingleTemplateMatcherAppendTest, BigAppendTest) {
+TEST_F(TSingleTemplateMatcherPrependTest, BigPrependTest) {
     std::string s;
     for(size_t j = 0; j < 10000; j++)
         s += rand()%('z' - 'a' + 1) + 'a';
 
-    single_append_matcher.AddTemplate(s);
+    single_prepend_matcher.AddTemplate(s);
     single_matcher.AddTemplate(s);
 
     for(size_t i = 0; i < 100; i++) {
         char c = rand()%('z' - 'a' + 1) + 'a';
         s += c;
-        single_append_matcher.AppendCharToTemplate(c);
+        single_prepend_matcher.AppendCharToTemplate(c);
+        c = rand()%('z' - 'a' + 1) + 'a';
+        s = c + s;
+        single_prepend_matcher.PrependCharToTemplate(c);
         single_matcher = TSingleTemplateMatcher();
         single_matcher.AddTemplate(s);
 
         stm3 = RandomCharStream(100000, 'a', 'z');
 
-        single_append_matched = single_append_matcher.MatchStream(stm3);
+        single_prepend_matched = single_prepend_matcher.MatchStream(stm3);
         single_matched = single_matcher.MatchStream(stm3);
+        ASSERT_EQ(single_prepend_matched, single_matched);
     }
 }
 
