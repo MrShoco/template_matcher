@@ -42,8 +42,9 @@ private:
 
             cur = next;
         }
-        cur -> leaf = n++;
-        return n - 1;
+        if (cur -> leaf == -1)
+            cur -> leaf = n++;
+        return cur -> leaf;
     }
     
     Vertex* get_closest(Vertex* cur) {
