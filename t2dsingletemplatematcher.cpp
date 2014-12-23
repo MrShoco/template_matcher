@@ -34,12 +34,13 @@ TStringId T2DSingleTemplateMatcher::AddTemplate(const std::vector<std::string> &
     kmp[0] = 0;
     for (size_t i = 1; i < ids.size(); i++) {
         int j = kmp[i - 1];
-        while (kmp[i] > 0 && ids[i] != ids[j]) {
+        while (j > 0 && ids[i] != ids[j]) {
             j = kmp[j - 1];
         }
         if (ids[i] == ids[j]) j++;
         kmp[i] = j;
     }
+    ids.push_back(-2);
 
     return 0;
 }
@@ -71,7 +72,7 @@ T2DMatchResults T2DSingleTemplateMatcher::MatchStream(const std::vector<std::str
             if (table[j][i] == ids[pref])
                 pref++;
             
-            if(pref == ids.size())
+            if(pref == ids.size() - 1)
                 result.push_back(std::make_pair(j + 1, i + 1));
         }
     }
