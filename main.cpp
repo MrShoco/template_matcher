@@ -158,7 +158,7 @@ TEST_F(TDynamicTemplateMatcherTest, BigTest) {
     std::sort(dynamic_matched.begin(), dynamic_matched.end());
 
     ASSERT_EQ(dynamic_matched, static_matched);
-    
+
 
     dynamic_matcher = TDynamicTemplateMatcher();
     

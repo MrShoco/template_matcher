@@ -15,8 +15,8 @@ TStringId TDynamicTemplateMatcher::AddTemplate(const std::string &templ) {
     Tree cur = Create(templ, n);
     
     for (size_t i = 0; i < trees.size(); i++) {
-        for (size_t j = 0; j < trees[i].strings.size(); j++) {
-            if (trees[i].strings[j].first == templ)
+        if (!trees[i].isEmpty()) {
+            if (trees[i].check(templ))
                 throw TBadStringException("There is such a string");
         }
     }

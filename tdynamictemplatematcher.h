@@ -46,8 +46,8 @@ class TDynamicTemplateMatcher : public IMetaTemplateMatcher {
         int add(const std::string &s, int n) {
             strings.push_back(make_pair(s, n));
             Vertex* cur = root;
-            for(size_t i = 0; i < s.size(); i++) {
-                if(cur -> next[s[i]] == nullptr) {
+            for (size_t i = 0; i < s.size(); i++) {
+                if (cur -> next[s[i]] == nullptr) {
                     cur -> next[s[i]] = new Vertex(cur, s[i]);
                 }
                 Vertex* next = cur -> next[s[i]];
@@ -56,6 +56,18 @@ class TDynamicTemplateMatcher : public IMetaTemplateMatcher {
             }
             cur -> leaf = n++;
             return n - 1;
+        }
+
+        bool check(const std::string &s) {
+            Vertex* cur = root;
+            for (size_t i = 0; i < s.size(); i++) {
+                if (cur -> next[s[i]] == nullptr)
+                    return false;
+                cur = cur -> next[s[i]];
+            }
+            if (cur -> leaf == -1)
+                return false;
+            return true;
         }
         
         Vertex* get_closest(Vertex* cur) {
